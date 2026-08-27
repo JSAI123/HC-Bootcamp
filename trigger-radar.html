@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Trigger Radar | Deloitte Human Capital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@1,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#86BC25;
+    --neon:#86EB22;
+    --blue:#00A3E0;
+    --dark:#282728;
+    --black:#000000;
+    --white:#FFFFFF;
+    --gray-mid:#5b5a5b;
+    --gray-light:#e9e8e6;
+    --radius:18px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Open Sans', Arial, sans-serif;
+    background:var(--dark);
+    color:var(--white);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  #app{
+    width:100%;
+    max-width:520px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    overflow:hidden;
+    background:var(--dark);
+  }
+
+  /* circular motifs, non-overlapping, max 3 per frame */
+  .motif{
+    position:absolute;
+    border-radius:50%;
+    pointer-events:none;
+    z-index:0;
+  }
+  .motif-1{
+    width:340px;height:340px;
+    top:-160px; right:-140px;
+    background:radial-gradient(circle at 30% 30%, rgba(134,235,34,0.35), rgba(134,235,34,0) 70%);
+  }
+  .motif-2{
+    width:220px;height:220px;
+    bottom:-110px; left:-90px;
+    background:radial-gradient(circle at 60% 60%, rgba(0,163,224,0.25), rgba(0,163,224,0) 70%);
+  }
+
+  .topbar{
+    position:relative;
+    z-index:2;
+    padding:22px 24px 10px 24px;
+  }
+  .bootcamp-tag{
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--green);
+    margin-bottom:6px;
+  }
+  .wordmark{
+    font-size:22px;
+    font-weight:700;
+    letter-spacing:0.2px;
+  }
+  .wordmark .accent{
+    font-family:'STIX Two Text', serif;
+    font-style:italic;
+    font-weight:600;
+    color:var(--neon);
+    margin-left:4px;
+  }
+  .eyebrow-small{
+    font-size:11px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    color:var(--gray-light);
+    opacity:0.7;
+    margin-top:2px;
+  }
+
+  .progress-track{
+    display:flex;
+    gap:6px;
+    margin-top:16px;
+  }
+  .progress-seg{
+    height:4px;
+    flex:1;
+    background:rgba(255,255,255,0.15);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .progress-seg > span{
+    display:block;
+    height:100%;
+    width:0%;
+    background:var(--green);
+    transition:width 0.3s ease;
+  }
+  .progress-seg.done > span{width:100%;}
+  .progress-seg.active > span{width:60%;}
+
+  .stage{
+    position:relative;
+    z-index:2;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    padding:20px 24px 28px 24px;
+  }
+
+  .card{
+    background:var(--white);
+    color:var(--black);
+    border-radius:var(--radius);
+    padding:26px 22px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.25);
+  }
+
+  h1.screen-title{
+    font-size:24px;
+    font-weight:700;
+    margin:0 0 10px 0;
+    color:var(--white);
+  }
+  h1.screen-title.on-card{
+    color:var(--black);
+  }
+  p.body-text{
+    font-size:15px;
+    line-height:1.55;
+    color:var(--gray-light);
+    margin:0 0 22px 0;
+  }
+  p.body-text.on-card{
+    color:var(--gray-mid);
+  }
+
+  .field-group{
+    margin-bottom:16px;
+  }
+  label.field-label{
+    display:block;
+    font-size:12px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+    color:var(--gray-mid);
+    margin-bottom:6px;
+  }
+  input[type="text"]{
+    width:100%;
+    padding:13px 14px;
+    border-radius:10px;
+    border:2px solid var(--gray-light);
+    font-size:16px;
+    font-family:inherit;
+    background:var(--white);
+    color:var(--black);
+  }
+  input[type="text"]:focus{
+    outline:none;
+    border-color:var(--green);
+  }
+
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    padding:15px 20px;
+    border-radius:999px;
+    border:none;
+    font-size:16px;
+    font-weight:700;
+    font-family:inherit;
+    cursor:pointer;
+    transition:transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn-primary{
+    background:var(--green);
+    color:var(--black);
+    margin-top:8px;
+  }
+  .btn-primary:disabled{
+    opacity:0.35;
+    cursor:not-allowed;
+  }
+  .btn-primary:not(:disabled):active{
+    transform:scale(0.98);
+  }
+  .btn-dark{
+    background:var(--black);
+    color:var(--white);
+  }
+
+  .hint-below{
+    text-align:center;
+    font-size:12px;
+    color:var(--gray-light);
+    opacity:0.6;
+    margin-top:10px;
+  }
+
+  .eyebrow{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1.4px;
+    text-transform:uppercase;
+    color:var(--white);
+    background:var(--black);
+    padding:5px 12px;
+    border-radius:999px;
+    margin-bottom:14px;
+  }
+
+  .statement-box{
+    background:var(--gray-light);
+    border-left:4px solid var(--green);
+    border-radius:10px;
+    padding:16px 16px;
+    font-size:16px;
+    line-height:1.5;
+    color:var(--black);
+    margin-bottom:20px;
+  }
+
+  .question-line{
+    font-size:15px;
+    font-weight:700;
+    color:var(--black);
+    margin-bottom:18px;
+  }
+  .question-line .who{
+    color:var(--green);
+  }
+
+  /* slider */
+  .slider-wrap{
+    margin:26px 0 8px 0;
+  }
+  .slider-value{
+    text-align:center;
+    font-size:38px;
+    font-weight:700;
+    color:var(--green);
+    margin-bottom:6px;
+    min-height:46px;
+  }
+  input[type="range"]{
+    -webkit-appearance:none;
+    appearance:none;
+    width:100%;
+    height:8px;
+    border-radius:6px;
+    background:linear-gradient(to right, var(--green) 0%, var(--green) 50%, var(--gray-light) 50%, var(--gray-light) 100%);
+    outline:none;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none;
+    appearance:none;
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--white);
+    border:4px solid var(--green);
+    cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  }
+  input[type="range"]::-moz-range-thumb{
+    width:28px;height:28px;
+    border-radius:50%;
+    background:var(--white);
+    border:4px solid var(--green);
+    cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  }
+  .slider-labels{
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--gray-mid);
+    margin-top:8px;
+    text-transform:uppercase;
+    letter-spacing:0.4px;
+  }
+
+  .step-count{
+    text-align:center;
+    font-size:12px;
+    color:var(--gray-mid);
+    margin-top:22px;
+  }
+
+  .center-stage{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+
+  /* reveal cards */
+  .reveal-list{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    margin-bottom:20px;
+  }
+  .reveal-card{
+    background:var(--white);
+    color:var(--black);
+    border-radius:14px;
+    padding:16px 16px;
+    border:2px solid transparent;
+  }
+  .reveal-card.gap{
+    border-color:var(--blue);
+  }
+  .reveal-card .stmt-text{
+    font-size:13.5px;
+    color:var(--gray-mid);
+    line-height:1.4;
+    margin-bottom:12px;
+  }
+  .stat-row{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .stat-chip{
+    background:var(--gray-light);
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:12.5px;
+    flex:1;
+    min-width:120px;
+  }
+  .stat-chip b{
+    display:block;
+    font-size:18px;
+    color:var(--black);
+  }
+  .stat-chip.gap-chip{
+    background:var(--blue);
+    color:var(--white);
+  }
+  .stat-chip.gap-chip b{color:var(--white);}
+  .discussion-q{
+    margin-top:12px;
+    font-size:13.5px;
+    font-style:italic;
+    color:var(--black);
+    background:rgba(0,163,224,0.1);
+    border-left:3px solid var(--blue);
+    padding:10px 12px;
+    border-radius:6px;
+  }
+
+  /* pattern cards */
+  .pattern-card{
+    background:var(--white);
+    color:var(--black);
+    border-radius:14px;
+    padding:20px 18px;
+    margin-bottom:16px;
+  }
+  .pattern-name{
+    font-size:14px;
+    font-weight:700;
+    color:var(--gray-mid);
+    text-transform:uppercase;
+    letter-spacing:0.6px;
+    margin-bottom:6px;
+  }
+  .pattern-type{
+    font-family:'STIX Two Text', serif;
+    font-style:italic;
+    font-weight:600;
+    font-size:26px;
+    color:var(--green);
+    margin-bottom:10px;
+  }
+  .pattern-desc{
+    font-size:14.5px;
+    line-height:1.55;
+    color:var(--black);
+  }
+
+  .note-text{
+    font-size:12.5px;
+    color:var(--gray-light);
+    opacity:0.75;
+    text-align:center;
+    margin-bottom:18px;
+  }
+
+  /* closer */
+  .menti-box{
+    background:var(--white);
+    color:var(--black);
+    border-radius:14px;
+    padding:20px;
+    text-align:center;
+    margin-bottom:16px;
+  }
+  .qr-placeholder{
+    width:140px;height:140px;
+    margin:0 auto 14px auto;
+    background:var(--gray-light);
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    color:var(--gray-mid);
+    text-align:center;
+    line-height:1.4;
+    padding:10px;
+  }
+  .menti-code-input{
+    text-align:center;
+    font-size:18px;
+    font-weight:700;
+    letter-spacing:1px;
+  }
+
+  .duo-tag{
+    font-size:12px;
+    color:var(--gray-light);
+    opacity:0.7;
+    margin-top:4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="motif motif-1"></div>
+  <div class="motif motif-2"></div>
+
+  <div class="topbar">
+    <div class="bootcamp-tag">Deloitte Human Capital Bootcamp 2026</div>
+    <div class="wordmark">Trigger<span class="accent">Radar</span></div>
+    <div class="eyebrow-small" id="phaseLabel">Personal leadership with AI</div>
+    <div class="progress-track" id="progressTrack"></div>
+  </div>
+
+  <div class="stage" id="stage"></div>
+</div>
+
+<script>
+(function(){
+
+  const statements = [
+    {
+      id: 1,
+      category: "Autonomy",
+      text: "An AI tool suggests an approach for a client case that's different from how you've always done it, and your team wants to follow that approach instead.",
+      question: "How triggered do you think {name} will be by this?",
+      selfQuestion: "How triggered are you, really, by this?",
+      discussion: "What does it feel like when a tool changes the way work gets done, without you choosing that?",
+      predictBy: "A"
+    },
+    {
+      id: 2,
+      category: "Recognition",
+      text: "You spent hours on an analysis, and a colleague gets praised for the same result they generated with AI in five minutes.",
+      question: "How triggered do you think {name} will be by this?",
+      selfQuestion: "How triggered are you, really, by this?",
+      discussion: "What would it mean for you if your AI use gets less visible recognition than manual work?",
+      predictBy: "B"
+    },
+    {
+      id: 3,
+      category: "Control",
+      text: "You notice you're increasingly sending AI output straight to the client, unchecked, because your team assumes it's correct.",
+      question: "How triggered do you think {name} will be by this?",
+      selfQuestion: "How triggered are you, really, by this?",
+      discussion: "What would you need to feel comfortable letting go of checking AI output yourself?",
+      predictBy: "A"
+    },
+    {
+      id: 4,
+      category: "Fairness",
+      text: "A junior on your team uses AI more skillfully than you do, and delivers faster, better work than you could on your own.",
+      question: "How triggered do you think {name} will be by this?",
+      selfQuestion: "How triggered are you, really, by this?",
+      discussion: "What does 'earned' mean to you, when speed and skill with AI start to matter more than experience?",
+      predictBy: "B"
+    },
+    {
+      id: 5,
+      category: "Pace",
+      text: "Your manager expects you to already be working 'AI-first,' while you're still figuring out how to do that well and responsibly.",
+      question: "How triggered do you think {name} will be by this?",
+      selfQuestion: "How triggered are you, really, by this?",
+      discussion: "Where does the pressure to move fast come from, and is it realistic?",
+      predictBy: "A"
+    },
+    {
+      id: 6,
+      category: "Identity",
+      text: "You realize that a big part of what you're good at could be taken over by AI in a few years.",
+      question: "How triggered do you think {name} will be by this?",
+      selfQuestion: "How triggered are you, really, by this?",
+      discussion: "If part of your expertise shifts, what stays yours?",
+      predictBy: "B"
+    }
+  ];
+
+  const patternTexts = {
+    Autonomy: "You like to stay in control of how work gets done. AI taking that over can feel like a loss of control.",
+    Recognition: "Visibility and appreciation for your effort matter to you. AI can sometimes take that visibility away.",
+    Control: "You want to understand what's happening before you can let go of it. Trusting a black box feels uncomfortable.",
+    Fairness: "You're sensitive to fair standing and earned position. Seeing someone use AI more skillfully touches on what 'earned' means to you.",
+    Pace: "You feel pressure to keep up with a speed that doesn't match your own process.",
+    Identity: "Part of your value sits in expertise that's now shifting. That touches who you are, not just what you do."
+  };
+
+  let state = {
+    nameA: "",
+    nameB: "",
+    predictions: {},
+    ownA: {},
+    ownB: {},
+    mentiCode: ""
+  };
+
+  // build the step sequence
+  let steps = [];
+  steps.push({ type: "welcome" });
+  steps.push({ type: "predict-intro" });
+  statements.forEach(s => steps.push({ type: "predict", stmt: s }));
+  steps.push({ type: "private-intro", person: "A" });
+  statements.forEach(s => steps.push({ type: "private", stmt: s, person: "A" }));
+  steps.push({ type: "handoff", from: "A", to: "B" });
+  steps.push({ type: "private-intro", person: "B" });
+  statements.forEach(s => steps.push({ type: "private", stmt: s, person: "B" }));
+  steps.push({ type: "reveal-intro" });
+  steps.push({ type: "reveal" });
+  steps.push({ type: "patterns" });
+  steps.push({ type: "closer" });
+
+  let idx = 0;
+
+  function name(p){
+    if(p === "A") return state.nameA || "Person 1";
+    return state.nameB || "Person 2";
+  }
+
+  function phaseOf(type){
+    if(type === "welcome") return 0;
+    if(type === "predict-intro" || type === "predict") return 1;
+    if(type === "private-intro" || type === "private" || type === "handoff") return 2;
+    if(type === "reveal-intro" || type === "reveal") return 3;
+    if(type === "patterns") return 4;
+    return 5;
+  }
+
+  const phaseLabels = ["Start","Predict","Answer","Reveal","Patterns","Close"];
+
+  function renderProgress(){
+    const track = document.getElementById("progressTrack");
+    const label = document.getElementById("phaseLabel");
+    const current = phaseOf(steps[idx].type);
+    label.textContent = phaseLabels[current] + "  ·  Personal leadership with AI";
+    track.innerHTML = "";
+    for(let i=1;i<=5;i++){
+      const seg = document.createElement("div");
+      seg.className = "progress-seg";
+      if(i < current) seg.classList.add("done");
+      else if(i === current) seg.classList.add("active");
+      const fill = document.createElement("span");
+      seg.appendChild(fill);
+      track.appendChild(seg);
+    }
+  }
+
+  function go(){
+    idx++;
+    render();
+  }
+
+  function updateSliderFill(input){
+    const val = (input.value - input.min) / (input.max - input.min) * 100;
+    input.style.background = `linear-gradient(to right, var(--green) 0%, var(--green) ${val}%, var(--gray-light) ${val}%, var(--gray-light) 100%)`;
+  }
+
+  function sliderMarkup(idPrefix){
+    return `
+      <div class="slider-wrap">
+        <div class="slider-value" id="${idPrefix}-value">Tap the slider</div>
+        <input type="range" min="1" max="5" step="1" id="${idPrefix}-range" class="trigger-slider">
+        <div class="slider-labels"><span>Not triggered</span><span>Very triggered</span></div>
+      </div>
+    `;
+  }
+
+  function wireSlider(idPrefix, onChange){
+    const input = document.getElementById(idPrefix + "-range");
+    const valueLabel = document.getElementById(idPrefix + "-value");
+    const nextBtn = document.getElementById("nextBtn");
+    input.addEventListener("input", function(){
+      valueLabel.textContent = input.value + " / 5";
+      updateSliderFill(input);
+      if(nextBtn) nextBtn.disabled = false;
+      onChange(parseInt(input.value,10));
+    });
+  }
+
+  function render(){
+    renderProgress();
+    const stage = document.getElementById("stage");
+    const step = steps[idx];
+
+    if(step.type === "welcome"){
+      stage.innerHTML = `
+        <div class="center-stage">
+          <h1 class="screen-title">Two people. Six moments. One radar.</h1>
+          <p class="body-text">You'll each guess how triggered your partner is by a few AI-related work moments, then find out how they actually feel. The gaps are where the conversation starts.</p>
+          <div class="card">
+            <div class="field-group">
+              <label class="field-label">Person 1 name</label>
+              <input type="text" id="nameAInput" placeholder="e.g. Sam">
+            </div>
+            <div class="field-group">
+              <label class="field-label">Person 2 name</label>
+              <input type="text" id="nameBInput" placeholder="e.g. Jordan">
+            </div>
+            <button class="btn btn-primary" id="nextBtn">Start</button>
+          </div>
+        </div>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", function(){
+        state.nameA = document.getElementById("nameAInput").value.trim() || "Person 1";
+        state.nameB = document.getElementById("nameBInput").value.trim() || "Person 2";
+        go();
+      });
+    }
+
+    else if(step.type === "predict-intro"){
+      stage.innerHTML = `
+        <div class="center-stage">
+          <h1 class="screen-title">Round 1: Predict</h1>
+          <p class="body-text">Read each situation together. For every statement, one of you guesses how triggered the other will be, before they answer for themselves.</p>
+          <button class="btn btn-primary" id="nextBtn">Let's go</button>
+        </div>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "predict"){
+      const s = step.stmt;
+      const predictor = s.predictBy;
+      const target = predictor === "A" ? "B" : "A";
+      const qCount = statements.indexOf(s) + 1;
+      stage.innerHTML = `
+        <div class="card">
+          <span class="eyebrow">${s.category}</span>
+          <div class="statement-box">${s.text}</div>
+          <div class="question-line">${name(predictor)}, ${s.question.replace("{name}", "<span class='who'>" + name(target) + "</span>")}</div>
+          ${sliderMarkup("predict")}
+          <button class="btn btn-primary" id="nextBtn" disabled>Next</button>
+        </div>
+        <div class="step-count">Prediction ${qCount} of ${statements.length}</div>
+      `;
+      wireSlider("predict", function(val){
+        state.predictions[s.id] = val;
+      });
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "private-intro"){
+      const p = step.person;
+      const other = p === "A" ? "B" : "A";
+      stage.innerHTML = `
+        <div class="center-stage">
+          <h1 class="screen-title">Round 2: Your turn, ${name(p)}</h1>
+          <p class="body-text">${name(other)}, look away for a moment. ${name(p)}, answer honestly, just for yourself. Nobody sees this screen until you're ready to share.</p>
+          <button class="btn btn-primary" id="nextBtn">I'm ready</button>
+        </div>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "private"){
+      const s = step.stmt;
+      const p = step.person;
+      const qCount = statements.indexOf(s) + 1;
+      const isLast = qCount === statements.length;
+      stage.innerHTML = `
+        <div class="card">
+          <span class="eyebrow">${s.category}</span>
+          <div class="statement-box">${s.text}</div>
+          <div class="question-line">${s.selfQuestion}</div>
+          ${sliderMarkup("private")}
+          <button class="btn btn-primary" id="nextBtn" disabled>${isLast ? "Done" : "Next"}</button>
+        </div>
+        <div class="step-count">Question ${qCount} of ${statements.length}, just for ${name(p)}</div>
+      `;
+      wireSlider("private", function(val){
+        if(p === "A") state.ownA[s.id] = val;
+        else state.ownB[s.id] = val;
+      });
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "handoff"){
+      stage.innerHTML = `
+        <div class="center-stage">
+          <h1 class="screen-title">Thanks, ${name(step.from)}</h1>
+          <p class="body-text">Your answers are saved and hidden. Hand the phone to ${name(step.to)} now.</p>
+          <button class="btn btn-primary" id="nextBtn">I'm ${name(step.to)}, continue</button>
+        </div>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "reveal-intro"){
+      stage.innerHTML = `
+        <div class="center-stage">
+          <h1 class="screen-title">The Reveal</h1>
+          <p class="body-text">Here's where prediction meets reality. Look for the biggest gaps, those are usually where it gets interesting.</p>
+          <button class="btn btn-primary" id="nextBtn">Show us</button>
+        </div>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "reveal"){
+      let cards = "";
+      statements.forEach(s => {
+        const predictor = s.predictBy;
+        const target = predictor === "A" ? "B" : "A";
+        const predictedVal = state.predictions[s.id];
+        const actualVal = target === "A" ? state.ownA[s.id] : state.ownB[s.id];
+        const gap = Math.abs(predictedVal - actualVal);
+        const isGap = gap >= 2;
+        cards += `
+          <div class="reveal-card ${isGap ? "gap" : ""}">
+            <span class="eyebrow">${s.category}</span>
+            <div class="stmt-text">${s.text}</div>
+            <div class="stat-row">
+              <div class="stat-chip"><b>${predictedVal}</b>${name(predictor)}'s guess for ${name(target)}</div>
+              <div class="stat-chip"><b>${actualVal}</b>${name(target)}'s real score</div>
+              ${isGap ? `<div class="stat-chip gap-chip"><b>${gap}</b>point gap</div>` : ``}
+            </div>
+            ${isGap ? `<div class="discussion-q">${s.discussion}</div>` : ``}
+          </div>
+        `;
+      });
+      stage.innerHTML = `
+        <h1 class="screen-title">Prediction vs reality</h1>
+        <div class="reveal-list">${cards}</div>
+        <button class="btn btn-primary" id="nextBtn">See your patterns</button>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "patterns"){
+      function topCategories(ownScores){
+        let max = 0;
+        statements.forEach(s => { if(ownScores[s.id] > max) max = ownScores[s.id]; });
+        return statements.filter(s => ownScores[s.id] === max).map(s => s.category);
+      }
+      const topA = topCategories(state.ownA);
+      const topB = topCategories(state.ownB);
+
+      function patternCard(personName, categories){
+        return `
+          <div class="pattern-card">
+            <div class="pattern-name">${personName}</div>
+            <div class="pattern-type">${categories.join(" / ")}</div>
+            <div class="pattern-desc">${categories.map(c => patternTexts[c]).join(" ")}</div>
+          </div>
+        `;
+      }
+
+      stage.innerHTML = `
+        <h1 class="screen-title">Your Trigger Patterns</h1>
+        ${patternCard(name("A"), topA)}
+        ${patternCard(name("B"), topB)}
+        <p class="note-text">This isn't a diagnosis, just a starting point for the conversation.</p>
+        <button class="btn btn-primary" id="nextBtn">Wrap up</button>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "closer"){
+      stage.innerHTML = `
+        <h1 class="screen-title">Bring it to the group</h1>
+        <p class="body-text">In one sentence, what did you learn about yourself today? Share it on Mentimeter using the code from your facilitator.</p>
+        <div class="menti-box">
+          <div class="qr-placeholder">Facilitator: swap this for your Menti QR code</div>
+          <label class="field-label">Menti code</label>
+          <input type="text" class="menti-code-input" id="mentiInput" placeholder="e.g. 1234 5678" value="${state.mentiCode}">
+        </div>
+        <button class="btn btn-dark" id="restartBtn">Start over for the next duo</button>
+        <div class="duo-tag">Trigger Radar, Deloitte Human Capital bootcamp</div>
+      `;
+      document.getElementById("mentiInput").addEventListener("input", function(e){
+        state.mentiCode = e.target.value;
+      });
+      document.getElementById("restartBtn").addEventListener("click", function(){
+        state = { nameA:"", nameB:"", predictions:{}, ownA:{}, ownB:{}, mentiCode: state.mentiCode };
+        idx = 0;
+        render();
+      });
+    }
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>
