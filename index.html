@@ -6,7 +6,7 @@
 <title>Trigger Radar | Deloitte Human Capital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@1,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&family=STIX+Two+Text:ital,wght@1,600&display=optional" rel="stylesheet">
 <style>
   :root{
     --green:#86BC25;
@@ -21,7 +21,7 @@
   }
 
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0;-webkit-overflow-scrolling:touch;}
   body{
     font-family:'Open Sans', Arial, sans-serif;
     background:var(--dark);
@@ -726,9 +726,9 @@
             <div class="stat-row">
               <div class="stat-chip"><b>${valA}</b>${name("A")}</div>
               <div class="stat-chip"><b>${valB}</b>${name("B")}</div>
-              ${isGap ? `<div class="stat-chip gap-chip"><b>${gap}</b>point gap</div>` : ``}
             </div>
             ${isGap ? `<div class="discussion-q">${s.discussion}</div>` : ``}
+            ${isGap ? `<div class="stat-chip gap-chip" style="margin-top:10px;"><b>${gap}</b>point gap</div>` : ``}
           </div>
         `;
       });
