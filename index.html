@@ -556,6 +556,7 @@
   steps.push({ type: "reveal-intro" });
   steps.push({ type: "reveal" });
   steps.push({ type: "patterns" });
+  steps.push({ type: "gaps" });
   steps.push({ type: "closer" });
 
   let idx = 0;
@@ -569,7 +570,7 @@
     if(type === "welcome") return 0;
     if(type === "private-intro" || type === "private" || type === "handoff") return 1;
     if(type === "reveal-intro" || type === "reveal") return 2;
-    if(type === "patterns") return 3;
+    if(type === "patterns" || type === "gaps") return 3;
     return 4;
   }
 
@@ -728,7 +729,6 @@
               <div class="stat-chip"><b>${valB}</b>${name("B")}</div>
             </div>
             ${isGap ? `<div class="discussion-q">${s.discussion}</div>` : ``}
-            ${isGap ? `<div class="stat-chip gap-chip" style="margin-top:10px;"><b>${gap}</b>point gap</div>` : ``}
           </div>
         `;
       });
@@ -778,7 +778,29 @@
         ${patternCard(name("A"), state.ownA)}
         ${patternCard(name("B"), state.ownB)}
         <p class="note-text">This isn't a diagnosis, just a starting point for the conversation.</p>
-        <button class="btn btn-primary" id="nextBtn">Wrap up</button>
+        <button class="btn btn-primary" id="nextBtn">Next</button>
+      `;
+      document.getElementById("nextBtn").addEventListener("click", go);
+    }
+
+    else if(step.type === "gaps"){
+      const rows = statements
+        .map(s => ({ s, gap: Math.abs(state.ownA[s.id] - state.ownB[s.id]) }))
+        .sort((a,b) => b.gap - a.gap);
+      let list = "";
+      rows.forEach(r => {
+        list += `
+          <div class="stat-chip" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span>${r.s.category}</span>
+            <b style="font-size:16px;">${r.gap}</b>
+          </div>
+        `;
+      });
+      stage.innerHTML = `
+        <h1 class="screen-title">Point Gaps</h1>
+        <p class="body-text">Optional, only if there's time. The numbers behind the differences, biggest first.</p>
+        <div class="card">${list}</div>
+        <button class="btn btn-primary" id="nextBtn" style="margin-top:16px;">Wrap up</button>
       `;
       document.getElementById("nextBtn").addEventListener("click", go);
     }
